@@ -16,7 +16,7 @@ const onSubmit = async () => {
         loginSuccess.value = true;
         loginError.value = false;
 
-        await router.push({ path: '/dashboard' });
+        await router.push({ path: '/checkIn' });
     } else {
         loginSuccess.value = false;
         loginError.value = true;

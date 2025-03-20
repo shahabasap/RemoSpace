@@ -1,462 +1,452 @@
 <script setup lang="ts">
-import { useQuasar } from 'quasar';
-import { ref, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-const left = ref(false);
-const $q = useQuasar();
 
-// User data
+const loadingData = ref(true);
+const currentDateTime = ref(new Date());
+const router = useRouter();
+
+
 const user = ref({
-    name: 'Alex Johnson',
-    avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
-    department: 'Design',
-    teamName: 'Product Experience',
-    checkedIn: false,
-    moodSubmitted: false,
-    timezone: 'GMT+5:30',
-    workStatus: 'Remote'
+    name: 'John Doe',
+    position: 'UX Designer',
+    avatar: 'https://cdn.quasar.dev/img/avatar.png',
+    streak: 5,
+    team: 'Design Squad',
+    status: 'checked-in',
+    checkedInTime: '08:30 AM'
 });
 
-// Date and time data
-const currentDate = ref('');
-const currentTime = ref('');
+// Projects data
+const projects = ref([
+    {
+        id: 1,
+        name: 'Website Redesign',
+        progress: 68,
+        deadline: '2025-04-15',
+        priority: 'high',
+        color: 'primary',
+        tasks: 24,
+        completedTasks: 16
+    },
+    {
+        id: 2,
+        name: 'Mobile App UI Kit',
+        progress: 42,
+        deadline: '2025-05-03',
+        priority: 'medium',
+        color: 'secondary',
+        tasks: 36,
+        completedTasks: 15
+    },
+    {
+        id: 3,
+        name: 'Brand Guidelines',
+        progress: 91,
+        deadline: '2025-03-28',
+        priority: 'medium',
+        color: 'purple',
+        tasks: 18,
+        completedTasks: 16
+    },
+    {
+        id: 4,
+        name: 'Product Onboarding Flow',
+        progress: 12,
+        deadline: '2025-06-10',
+        priority: 'low',
+        color: 'green',
+        tasks: 15,
+        completedTasks: 2
+    }
+]);
 
-// Check-in state
-const isCheckedIn = ref(false);
-const checkInTime = ref('');
+// Team members data
+const teamMembers = ref([
+    { name: 'Sarah Miller', status: 'checked-in', avatar: 'https://cdn.quasar.dev/img/avatar5.jpg', time: '08:32 AM' },
+    { name: 'David Chen', status: 'away', avatar: 'https://cdn.quasar.dev/img/avatar3.jpg', time: '07:45 AM' },
+    { name: 'Priya Sharma', status: 'offline', avatar: 'https://cdn.quasar.dev/img/avatar4.jpg', time: 'Yesterday' },
+    { name: 'James Wilson', status: 'checked-in', avatar: 'https://cdn.quasar.dev/img/avatar2.jpg', time: '09:05 AM' }
+]);
 
-// Mood tracking
-const selectedMood = ref<number | null>(null);
-const moodOptions = [
-    { value: 5, label: 'Excellent', icon: 'sentiment_very_satisfied', color: '#10B981' },
-    { value: 4, label: 'Good', icon: 'sentiment_satisfied', color: '#60A5FA' },
-    { value: 3, label: 'Okay', icon: 'sentiment_neutral', color: '#F59E0B' },
-    { value: 2, label: 'Not Great', icon: 'sentiment_dissatisfied', color: '#FB923C' },
-    { value: 1, label: 'Struggling', icon: 'sentiment_very_dissatisfied', color: '#EF4444' }
-];
-const moodNotes = ref('');
+// Recent tasks
+const recentTasks = ref([
+    { id: 1, title: 'Design homepage hero section', status: 'in-progress', project: 'Website Redesign', dueDate: '2025-03-22' },
+    { id: 2, title: 'Create icon set for mobile navigation', status: 'completed', project: 'Mobile App UI Kit', dueDate: '2025-03-18' },
+    { id: 3, title: 'Update typography guidelines', status: 'review', project: 'Brand Guidelines', dueDate: '2025-03-21' },
+    { id: 4, title: 'Wireframe onboarding screens', status: 'in-progress', project: 'Product Onboarding Flow', dueDate: '2025-03-25' },
+    { id: 5, title: 'Design system component updates', status: 'backlog', project: 'Website Redesign', dueDate: '2025-03-30' }
+]);
 
-// Update date and time
-const updateDateTime = () => {
-    const now = new Date();
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    currentDate.value = now.toLocaleDateString('en-US', options);
-    currentTime.value = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-};
 
-// Check in function
-const handleCheckIn = () => {
-    const now = new Date();
-    checkInTime.value = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    isCheckedIn.value = true;
+// Upcoming calendar
+const upcomingEvents = ref([
+    { time: '10:00 AM', title: 'Weekly Team Standup', participants: 8 },
+    { time: '12:30 PM', title: 'Lunch & Learn: UI Trends', participants: 12 },
+    { time: '03:00 PM', title: 'Project Review', participants: 4 }
+]);
 
-    // Show success notification
-    $q.notify({
-        color: 'positive',
-        textColor: 'white',
-        icon: 'check_circle',
-        message: `You've successfully checked in at ${checkInTime.value}`
-    });
-};
+// Time tracking for the week
+const weeklyTimeData = ref([
+    { day: 'Mon', hours: 8.5 },
+    { day: 'Tue', hours: 7.2 },
+    { day: 'Wed', hours: 8.0 },
+    { day: 'Thu', hours: 8.2 },
+    { day: 'Fri', hours: 0 },
+    { day: 'Sat', hours: 0 },
+    { day: 'Sun', hours: 0 }
+]);
 
-const handleCheckOut = () => {
-    isCheckedIn.value = false;
-};
+// Calculate work week stats
+const weekStats = computed(() => {
+    const totalHours = weeklyTimeData.value.reduce((sum, day) => sum + day.hours, 0);
+    const completedDays = weeklyTimeData.value.filter(day => day.hours > 0).length;
+    const targetHours = 40;
+    const progressPercentage = Math.min(Math.round((totalHours / targetHours) * 100), 100);
 
-// Submit mood feedback
-const submitMood = () => {
-    // In a real app, you would send this data to your backend
-    const selectedMoodData = moodOptions.find(mood => mood.value === selectedMood.value);
+    return {
+        totalHours: totalHours.toFixed(1),
+        completedDays,
+        progressPercentage,
+        remainingHours: Math.max(targetHours - totalHours, 0).toFixed(1)
+    };
+});
 
-    // Show success notification
-    $q.notify({
-        color: 'positive',
-        textColor: 'white',
-        icon: 'check_circle',
-        message: `Mood feedback submitted: ${selectedMoodData?.label}`
-    });
-
-    user.value.moodSubmitted = true;
-};
-
-// Navigate to profile
-const goToProfile = () => {
-    // router.push('/profile');
-    console.log('Navigate to profile');
-};
-
-// Initialize date and time, and set up interval to update them
+// Update date time periodically
 onMounted(() => {
+    // Set initial time
     updateDateTime();
-    setInterval(updateDateTime, 60000); // Update every minute
+
+    // Update time every minute
+    setInterval(updateDateTime, 60000);
+
+    // Simulating data loading
+    setTimeout(() => {
+        loadingData.value = false;
+    }, 1000);
 });
+
+const updateDateTime = () => {
+    currentDateTime.value = new Date();
+};
+
+const goToCheckIn = async () => {
+    // This would navigate to your separate check-in page
+    await router.push('/checkin');
+};
+
+// Format time as hh:mm AM/PM
+const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+};
+
+// Format date as Day of Week, Month Day
+const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+};
+
+// Calculate days remaining for deadline
+const getDaysRemaining = (deadline: Date) => {
+    const today = new Date();
+    const deadlineDate = new Date(deadline);
+    const diffTime = Number(deadlineDate) - Number(today);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+};
+
+// Get status color
+const getStatusColor = (status: string) => {
+    switch (status) {
+        case 'completed':
+            return 'green';
+        case 'in-progress':
+            return 'blue';
+        case 'review':
+            return 'orange';
+        case 'backlog':
+            return 'grey';
+        default:
+            return 'grey';
+    }
+};
+
+// Get priority color
+const getPriorityColor = (priority: string) => {
+    switch (priority) {
+        case 'high':
+            return 'red';
+        case 'medium':
+            return 'orange';
+        case 'low':
+            return 'green';
+        default:
+            return 'grey';
+    }
+};
+
 </script>
 
+
 <template>
-    <q-layout view="hHh lpR fFf">
-        <!-- Header -->
-        <q-header elevated class="bg-primary">
-            <q-toolbar>
-                <q-btn flat round dense icon="menu" @click="left = !left" />
-                <q-toolbar-title>
-                    <div class="logo">
-                        Remo<span class="text-secondary">Space</span>
-                    </div>
-                </q-toolbar-title>
+    <q-page class="bg-soft-white q-pa-md">
+        <!-- Welcome Header -->
+        <div class="row items-center q-mb-md">
+            <div class="col-12 col-md-6">
+                <h4 class="q-mt-none q-mb-xs">Welcome back, {{ user.name }}!</h4>
+                <p class="text-grey-7 q-mb-none">{{ formatDate(currentDateTime) }} · {{
+                    formatTime(currentDateTime) }}
+                </p>
+            </div>
+            <div class="col-12 col-md-6 text-right">
+                <q-btn color="primary" label="Check In/Out" icon="login" @click="goToCheckIn" />
+                <q-btn flat color="primary" class="q-ml-sm" label="View Timesheet" icon="schedule" />
+            </div>
+        </div>
 
-                <q-space />
+        <!-- Dashboard Content -->
+        <div class="row q-col-gutter-md">
+            <!-- Main Column -->
+            <div class="col-12 col-lg-8">
 
-                <div class="current-time q-mr-md text-weight-medium">{{ currentTime }}</div>
+                <!-- Active Projects -->
+                <q-card class="q-mb-md">
+                    <q-card-section class="q-pb-none">
+                        <div class="row items-center justify-between">
+                            <div class="text-h6">Active Projects</div>
+                            <q-btn flat color="primary" label="View All Projects" />
+                        </div>
+                    </q-card-section>
 
-                <q-btn round flat>
-                    <q-avatar size="28px">
-                        <img :src="user.avatar">
-                    </q-avatar>
-
-                    <q-menu>
-                        <q-list style="min-width: 200px">
-                            <q-item clickable v-ripple @click="goToProfile">
-                                <q-item-section avatar>
-                                    <q-avatar>
-                                        <img :src="user.avatar">
-                                    </q-avatar>
-                                </q-item-section>
+                    <q-card-section>
+                        <q-list separator>
+                            <q-item v-for="project in projects" :key="project.id" clickable class="project-item">
                                 <q-item-section>
-                                    <q-item-label>{{ user.name }}</q-item-label>
-                                    <q-item-label caption>{{ user.department }}</q-item-label>
-                                </q-item-section>
-                            </q-item>
-                            <q-separator />
-                            <q-item clickable v-ripple>
-                                <q-item-section avatar>
-                                    <q-icon name="person" />
-                                </q-item-section>
-                                <q-item-section>Profile</q-item-section>
-                            </q-item>
-                            <q-item clickable v-ripple>
-                                <q-item-section avatar>
-                                    <q-icon name="settings" />
-                                </q-item-section>
-                                <q-item-section>Settings</q-item-section>
-                            </q-item>
-                            <q-separator />
-                            <q-item clickable v-ripple>
-                                <q-item-section avatar>
-                                    <q-icon name="logout" />
-                                </q-item-section>
-                                <q-item-section>Logout</q-item-section>
-                            </q-item>
-                        </q-list>
-                    </q-menu>
-                </q-btn>
-            </q-toolbar>
+                                    <div class="row items-center q-col-gutter-md">
+                                        <div class="col-12 col-sm-4">
+                                            <q-item-label class="text-weight-medium">{{ project.name
+                                                }}</q-item-label>
+                                            <q-item-label caption>
+                                                <q-badge :color="getPriorityColor(project.priority)" text-color="white"
+                                                    class="q-mr-xs">
+                                                    {{ project.priority }}
+                                                </q-badge>
+                                                <span>{{ project.completedTasks }}/{{ project.tasks }}
+                                                    tasks</span>
+                                            </q-item-label>
+                                        </div>
 
-            <q-tabs dense no-caps inline-label align="left">
-                <q-route-tab to="/page1" icon="dashboard" label="Dashboard" />
-                <q-route-tab to="/page2" icon="people" label="Team" />
-                <q-route-tab to="/page3" icon="work" label="Projects" />
-                <q-route-tab to="/page3" icon="emoji_events" label="Rewards" />
-            </q-tabs>
-        </q-header>
-
-        <!-- Main content area -->
-        <q-page-container class="bg-soft-white">
-            <q-page padding>
-                <!-- Welcome section with date -->
-                <div class="dashboard-container">
-                    <!-- Welcome section with date and check-in -->
-                    <div class="welcome-section">
-                        <q-card flat bordered class="welcome-card">
-                            <q-card-section>
-                                <div class="row items-center justify-between">
-                                    <div class="col-12 col-md-6">
-                                        <h5 class="q-my-none text-weight-bold">Welcome back, {{ user.name }}</h5>
-                                        <p class="q-mb-none text-grey-7">{{ currentDate }}</p>
-                                    </div>
-                                    <div class="col-12 col-md-6 text-right">
-                                        <div class="row justify-end items-center q-gutter-md">
-                                            <div class="location-badge">
-                                                <q-chip outline color="primary">
-                                                    <q-avatar>
-                                                        <q-icon name="schedule" />
-                                                    </q-avatar>
-                                                    {{ user.timezone }}
-                                                </q-chip>
-                                                <q-chip outline color="primary">
-                                                    <q-avatar>
-                                                        <q-icon name="location_on" />
-                                                    </q-avatar>
-                                                    {{ user.workStatus }}
-                                                </q-chip>
+                                        <div class="col-12 col-sm-4">
+                                            <q-linear-progress :value="project.progress / 100" :color="project.color"
+                                                class="q-mt-sm" />
+                                            <div class="row justify-between q-mt-xs">
+                                                <span class="text-caption">Progress</span>
+                                                <span class="text-caption text-weight-medium">{{
+                                                    project.progress
+                                                    }}%</span>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </q-card-section>
-                        </q-card>
-                    </div>
 
-                    <!-- Main Content Cards -->
-                    <div class="row q-col-gutter-md q-mt-md">
-                        <!-- Check-in Card -->
-                        <div class="col-12 col-md-6">
-                            <q-card bordered class="full-height">
-                                <q-card-section class="bg-primary text-white">
-                                    <div class="text-h6">Daily Check-In</div>
-                                    <p class="description q-mb-none">Start your day and let your team know you're online
-                                    </p>
-                                </q-card-section>
-
-                                <q-separator />
-
-                                <q-card-section class="text-center q-pa-lg">
-                                    <div v-if="!isCheckedIn">
-                                        <div class="text-h6 q-mb-md">Ready to begin your day?</div>
-
-                                        <q-avatar size="80px" class="q-mb-lg">
-                                            <q-icon name="login" size="60px" color="primary" />
-                                        </q-avatar>
-
-                                        <div class="q-mt-md">
-                                            <q-btn unelevated color="primary" size="lg" class="full-width q-py-sm"
-                                                label="Check In Now" @click="handleCheckIn" icon="login" />
-                                        </div>
-                                    </div>
-
-                                    <div v-else>
-                                        <div class="text-h6 text-positive q-mb-md">You're checked in for today</div>
-
-                                        <q-avatar size="80px" class="q-mb-md">
-                                            <q-icon name="check_circle" size="60px" color="positive" />
-                                        </q-avatar>
-
-                                        <div class="q-mt-sm text-subtitle1">
-                                            Checked in at <span class="text-weight-bold">{{ checkInTime }}</span>
-                                        </div>
-
-                                        <div class="q-mt-lg">
-                                            <q-btn outline color="negative" label="Check Out" @click="handleCheckOut"
-                                                icon="logout" class="q-py-sm" />
-                                        </div>
-                                    </div>
-                                </q-card-section>
-
-                                <q-separator />
-
-                                <q-card-section class="bg-blue-1 text-primary">
-                                    <div class="row items-center">
-                                        <q-icon name="info" class="q-mr-sm" />
-                                        <div>Check-in is required to access all platform features</div>
-                                    </div>
-                                </q-card-section>
-                            </q-card>
-                        </div>
-
-                        <!-- Mood Tracking Card -->
-                        <div class="col-12 col-md-6">
-                            <q-card bordered :class="{ 'disabled-card': !isCheckedIn }">
-                                <q-card-section class="bg-primary text-white">
-                                    <div class="text-h6">Mood Check</div>
-                                    <p class="description q-mb-none">How are you feeling today?</p>
-                                </q-card-section>
-
-                                <q-separator />
-
-                                <q-card-section class="q-pa-lg">
-                                    <div class="text-center q-mb-md" v-if="!isCheckedIn">
-                                        <q-icon name="lock" size="24px" color="grey-7" class="q-mr-xs" />
-                                        <span class="text-grey-7">Check in first to share your mood</span>
-                                    </div>
-
-                                    <div v-else-if="user.moodSubmitted" class="text-center">
-                                        <div class="text-h6 text-positive q-mb-md">Mood submitted</div>
-                                        <q-avatar size="80px" class="q-mb-md">
-                                            <q-icon name="how_to_reg" size="60px" color="positive" />
-                                        </q-avatar>
-                                        <div class="q-mt-sm text-subtitle1">
-                                            Thank you for sharing how you're feeling today!
-                                        </div>
-                                    </div>
-
-                                    <div v-else>
-                                        <div class="mood-selection q-mb-lg">
-                                            <div class="row justify-center q-gutter-md">
-                                                <div v-for="mood in moodOptions" :key="mood.value"
-                                                    class="mood-option text-center"
-                                                    :class="{ 'selected-mood': selectedMood === mood.value }"
-                                                    @click="selectedMood = mood.value">
-                                                    <q-avatar size="54px"
-                                                        :color="selectedMood === mood.value ? mood.color : 'grey-3'">
-                                                        <q-icon :name="mood.icon" size="36px"
-                                                            :color="selectedMood === mood.value ? 'white' : 'grey-7'" />
-                                                    </q-avatar>
-                                                    <div class="q-mt-sm"
-                                                        :class="{ 'text-weight-bold': selectedMood === mood.value }">
-                                                        {{ mood.label }}
-                                                    </div>
+                                        <div class="col-12 col-sm-4">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <q-item-label caption>Deadline</q-item-label>
+                                                    <q-item-label>{{ new
+                                                        Date(project.deadline).toLocaleDateString()
+                                                        }}</q-item-label>
+                                                </div>
+                                                <div class="col text-right">
+                                                    <q-item-label caption>Remaining</q-item-label>
+                                                    <q-item-label
+                                                        :class="getDaysRemaining(new Date(project.deadline)) < 7 ? 'text-negative' : ''">
+                                                        {{ getDaysRemaining(new Date(project.deadline)) }} days
+                                                    </q-item-label>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <q-input v-model="moodNotes" type="textarea"
-                                            label="Anything to share? (optional)" outlined rows="2" />
-
-                                        <div class="text-center q-mt-lg">
-                                            <q-btn unelevated color="secondary" class="full-width q-py-sm"
-                                                label="Submit Mood" @click="submitMood" :disable="!selectedMood" />
-                                        </div>
                                     </div>
-                                </q-card-section>
+                                </q-item-section>
 
-                                <q-separator />
+                                <q-item-section side>
+                                    <q-btn flat round icon="chevron_right" color="grey-6" />
+                                </q-item-section>
+                            </q-item>
+                        </q-list>
+                    </q-card-section>
+                </q-card>
 
-                                <q-card-section class="bg-amber-1 text-amber-9">
-                                    <div class="row items-center">
-                                        <q-icon name="lightbulb" class="q-mr-sm" />
-                                        <div>Your wellbeing matters! Mood data helps us support our team better</div>
-                                    </div>
-                                </q-card-section>
-                            </q-card>
+                <!-- My Tasks -->
+                <q-card>
+                    <q-card-section class="q-pb-none">
+                        <div class="row items-center justify-between">
+                            <div class="text-h6">My Tasks</div>
+                            <q-btn flat color="primary" label="View All Tasks" />
                         </div>
-                    </div>
+                    </q-card-section>
 
-                    <!-- Quick Stats Section -->
-                    <div class="row q-col-gutter-md q-mt-md">
-                        <div class="col-12 col-md-4">
-                            <q-card bordered class="quick-access-card">
-                                <q-card-section class="bg-blue-1 text-primary">
-                                    <div class="text-subtitle1 text-weight-bold">
-                                        <q-icon name="access_time" class="q-mr-sm" />
-                                        Weekly Check-ins
-                                    </div>
-                                </q-card-section>
-                                <q-card-section class="q-pa-md text-center">
-                                    <div class="text-h4 text-weight-bold text-primary">4/5</div>
-                                    <q-linear-progress size="10px" :value="0.8" color="primary" class="q-mt-sm" />
-                                    <div class="text-caption q-mt-sm">Great progress this week!</div>
-                                </q-card-section>
-                            </q-card>
+                    <q-card-section>
+                        <q-table :rows="recentTasks" :columns="[
+                            { name: 'title', label: 'Task', field: 'title', align: 'left' },
+                            { name: 'project', label: 'Project', field: 'project', align: 'left' },
+                            { name: 'status', label: 'Status', field: 'status', align: 'center' },
+                            { name: 'dueDate', label: 'Due Date', field: 'dueDate', align: 'center' },
+                            { name: 'actions', label: '', field: 'actions', align: 'right' }
+                        ]" row-key="id" flat :pagination="{ rowsPerPage: 5 }">
+                            <template v-slot:body="props">
+                                <q-tr :props="props">
+                                    <q-td key="title" :props="props">
+                                        {{ props.row.title }}
+                                    </q-td>
+                                    <q-td key="project" :props="props">
+                                        {{ props.row.project }}
+                                    </q-td>
+                                    <q-td key="status" :props="props" class="text-center">
+                                        <q-badge :color="getStatusColor(props.row.status)">
+                                            {{ props.row.status.replace('-', ' ') }}
+                                        </q-badge>
+                                    </q-td>
+                                    <q-td key="dueDate" :props="props" class="text-center">
+                                        {{ new Date(props.row.dueDate).toLocaleDateString() }}
+                                    </q-td>
+                                    <q-td key="actions" :props="props" class="text-right">
+                                        <q-btn flat round dense icon="more_vert">
+                                            <q-menu>
+                                                <q-list style="min-width: 120px">
+                                                    <q-item clickable v-close-popup>
+                                                        <q-item-section>View Details</q-item-section>
+                                                    </q-item>
+                                                    <q-item clickable v-close-popup>
+                                                        <q-item-section>Change Status</q-item-section>
+                                                    </q-item>
+                                                    <q-item clickable v-close-popup>
+                                                        <q-item-section>Edit Task</q-item-section>
+                                                    </q-item>
+                                                </q-list>
+                                            </q-menu>
+                                        </q-btn>
+                                    </q-td>
+                                </q-tr>
+                            </template>
+                        </q-table>
+                    </q-card-section>
+                </q-card>
+            </div>
+
+            <!-- Sidebar Column -->
+            <div class="col-12 col-lg-4">
+                <!-- My Status -->
+                <q-card class="q-mb-md">
+                    <q-card-section class="q-pb-xs">
+                        <div class="text-h6">My Status</div>
+                    </q-card-section>
+
+                    <q-card-section>
+                        <div class="row items-center q-mb-md">
+                            <div class="col-auto">
+                                <q-avatar size="48px">
+                                    <img :src="user.avatar" />
+                                    <q-badge floating rounded color="green" v-if="user.status === 'checked-in'" />
+                                </q-avatar>
+                            </div>
+                            <div class="col q-ml-md">
+                                <div class="text-subtitle1">{{ user.name }}</div>
+                                <div class="text-caption text-grey-7">{{ user.position }} · {{ user.team }}
+                                </div>
+                                <div class="text-caption q-mt-xs">
+                                    <q-badge color="green" v-if="user.status === 'checked-in'">
+                                        Checked in at {{ user.checkedInTime }}
+                                    </q-badge>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-12 col-md-4">
-                            <q-card bordered class="quick-access-card">
-                                <q-card-section class="bg-amber-1 text-amber-9">
-                                    <div class="text-subtitle1 text-weight-bold">
-                                        <q-icon name="emoji_events" class="q-mr-sm" />
-                                        Reward Points
-                                    </div>
-                                </q-card-section>
-                                <q-card-section class="q-pa-md text-center">
-                                    <div class="text-h4 text-weight-bold text-secondary">750</div>
-                                    <div class="text-caption q-mt-sm">250 points until next reward</div>
-                                    <q-btn flat color="secondary" class="q-mt-sm" label="Redeem" />
-                                </q-card-section>
-                            </q-card>
-                        </div>
+                        <q-list>
+                            <q-item>
+                                <q-item-section avatar>
+                                    <q-icon name="schedule" color="primary" />
+                                </q-item-section>
+                                <q-item-section>
+                                    <q-item-label>Weekly Time</q-item-label>
+                                    <q-item-label caption>
+                                        {{ weekStats.totalHours }} / 40.0 hours ({{ weekStats.completedDays }}
+                                        days)
+                                    </q-item-label>
+                                </q-item-section>
+                                <q-item-section side>
+                                    <q-circular-progress :value="weekStats.progressPercentage" size="40px"
+                                        :thickness="0.11" color="primary" track-color="grey-3" class="q-mr-sm">
+                                        <div class="text-caption">{{ weekStats.progressPercentage }}%</div>
+                                    </q-circular-progress>
+                                </q-item-section>
+                            </q-item>
+                        </q-list>
+                    </q-card-section>
 
-                        <div class="col-12 col-md-4">
-                            <q-card bordered class="quick-access-card">
-                                <q-card-section class="bg-green-1 text-green-9">
-                                    <div class="text-subtitle1 text-weight-bold">
-                                        <q-icon name="people" class="q-mr-sm" />
-                                        Team Status
-                                    </div>
-                                </q-card-section>
-                                <q-card-section class="q-pa-md text-center">
-                                    <div class="text-h4 text-weight-bold text-positive">12/15</div>
-                                    <div class="text-caption q-mt-sm">Team members checked in today</div>
-                                    <q-btn flat color="positive" class="q-mt-sm" label="View Team" />
-                                </q-card-section>
-                            </q-card>
-                        </div>
-                    </div>
-                </div>
-            </q-page>
-        </q-page-container>
-    </q-layout>
+                </q-card>
+
+                <!-- Team Members -->
+                <q-card class="q-mb-md">
+                    <q-card-section class="q-pb-none">
+                        <div class="text-h6">Team Members</div>
+                    </q-card-section>
+
+                    <q-card-section>
+                        <q-list separator>
+                            <q-item v-for="(member, index) in teamMembers" :key="index" clickable>
+                                <q-item-section avatar>
+                                    <q-avatar>
+                                        <img :src="member.avatar" />
+                                        <q-badge floating color="green" v-if="member.status === 'checked-in'" />
+                                        <q-badge floating color="orange" v-if="member.status === 'away'" />
+                                        <q-badge floating color="grey" v-if="member.status === 'offline'" />
+                                    </q-avatar>
+                                </q-item-section>
+
+                                <q-item-section>
+                                    <q-item-label>{{ member.name }}</q-item-label>
+                                    <q-item-label caption>
+                                        <span class="text-capitalize">{{ member.status.replace('-', ' ')
+                                            }}</span> · {{
+                                                member.time }}
+                                    </q-item-label>
+                                </q-item-section>
+
+                                <q-item-section side>
+                                    <q-btn flat round size="sm" icon="chat_bubble_outline" color="primary" />
+                                </q-item-section>
+                            </q-item>
+                        </q-list>
+                    </q-card-section>
+                </q-card>
+
+                <!-- Today's Schedule -->
+                <q-card>
+                    <q-card-section class="q-pb-none">
+                        <div class="text-h6">Today's Schedule</div>
+                    </q-card-section>
+
+                    <q-card-section>
+                        <q-list separator>
+                            <q-item v-for="(event, index) in upcomingEvents" :key="index" clickable>
+                                <q-item-section avatar>
+                                    <q-icon name="event" color="primary" />
+                                </q-item-section>
+
+                                <q-item-section>
+                                    <q-item-label>{{ event.title }}</q-item-label>
+                                    <q-item-label caption>
+                                        {{ event.time }} · {{ event.participants }} participants
+                                    </q-item-label>
+                                </q-item-section>
+
+                                <q-item-section side>
+                                    <q-btn flat round icon="videocam" color="primary" size="sm" />
+                                </q-item-section>
+                            </q-item>
+                        </q-list>
+                    </q-card-section>
+                </q-card>
+            </div>
+        </div>
+    </q-page>
 </template>
-
-<style scoped>
-.dashboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.bg-soft-white {
-    background-color: #F8FAFC;
-}
-
-.welcome-card {
-    background-color: white;
-}
-
-.active-nav-link {
-    color: #1E3A8A;
-    background-color: #EFF6FF;
-    font-weight: 500;
-}
-
-.mood-option {
-    cursor: pointer;
-    padding: 10px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
-
-.mood-option:hover {
-    background-color: #EFF6FF;
-}
-
-.selected-mood {
-    background-color: #EFF6FF;
-}
-
-.disabled-card {
-    opacity: 0.75;
-    pointer-events: none;
-}
-
-.text-secondary {
-    color: #F59E0B !important;
-}
-
-.logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-}
-
-.description {
-    font-size: 0.9rem;
-    line-height: 1.6;
-    opacity: 0.9;
-}
-
-.drawer-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.drawer-footer {
-    margin-top: auto;
-}
-
-.current-time {
-    font-size: 1rem;
-}
-
-.quick-access-card {
-    height: 100%;
-    border-color: rgba(30, 58, 138, 0.1);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .location-badge {
-        margin-top: 10px;
-        display: flex;
-        justify-content: flex-start;
-    }
-}
-</style>

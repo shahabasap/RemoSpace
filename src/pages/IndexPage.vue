@@ -1,6 +1,11 @@
 <template>
     <div>
-        <h1 class="style">Muhammed Ansaf k</h1>
+        <div class="flex justify-center">
+            <h1 class="style">RemoSpace</h1>
+
+            <Router-Link to="/login">login</Router-Link>
+
+        </div>
     </div>
 </template>
 
