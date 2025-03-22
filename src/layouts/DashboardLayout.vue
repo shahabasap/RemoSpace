@@ -95,11 +95,8 @@ const goToCheckIn = async () => {
 
             <q-tabs align="left" class="bg-primary text-white">
                 <q-route-tab to="/dashboard" label="Dashboard" icon="dashboard" />
-                <q-route-tab to="projects" label="Projects" icon="folder" />
-                <q-route-tab to="/tasks" label="Tasks" icon="check_circle" />
-                <q-route-tab to="/team" label="Team" icon="groups" />
-                <q-route-tab to="/peoples" label="People" icon="people" />
-                <q-route-tab to="/reports" label="Reports" icon="bar_chart" />
+                <q-route-tab to="/dashboard/team" label="Team" icon="groups" />
+                <q-route-tab to="/dashboard/peoples" label="People" icon="people" />
             </q-tabs>
         </q-header>
 

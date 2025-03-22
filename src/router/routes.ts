@@ -14,25 +14,24 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/CheckInPage.vue')
   },
   {
+    path: '/mood',
+    component: () => import('pages/MoodSelectorModal.vue')
+  },
+  {
     path: '/dashboard',
     component: () => import('layouts/DashboardLayout.vue'),
-    redirect: "/dashboard/team",
     children: [
       {
-        path: 'team',
+        path: '',
         component: () => import('pages/DashboardPage.vue')
       },
       {
-        path: 'projects',
-        component: () => import('pages/ProjectPage.vue')
+        path: 'team',
+        component: () => import('pages/TeamPage.vue')
       },
       {
         path: 'peoples',
         component: () => import('pages/UsersPage.vue')
-      },
-      {
-        path: 'rewards',
-        component: () => import('pages/RewardsPage.vue')
       },
     ]
   },

@@ -7,6 +7,7 @@ export default defineConfig((/* ctx */) => {
   return {
 
     boot: [
+      'pinia'
     ],
 
     css: [

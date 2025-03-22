@@ -2,16 +2,10 @@
 import { type Mood } from 'src/boot/moodModel';
 import { ref, watch } from 'vue';
 
-const props = defineProps({
-    modelValue: {
-        type: Boolean,
-        default: false
-    }
-});
 
 const emit = defineEmits(['update:modelValue', 'mood-selected']);
 
-const showModal = ref(props.modelValue);
+const showModal = ref(true);
 const selectedMood = ref<Mood | null>(null);
 const moodNote = ref('');
 
@@ -61,10 +55,6 @@ const moodOptions = [
     }
 ];
 
-watch(() => props.modelValue, (newVal) => {
-    showModal.value = newVal;
-});
-
 watch(() => showModal.value, (newVal) => {
     emit('update:modelValue', newVal);
 });
@@ -82,40 +72,37 @@ const submitMood = () => {
     selectedMood.value = null;
 };
 
-const closeModal = () => {
-    showModal.value = false;
-};
+
 </script>
 
 <template>
     <q-dialog v-model="showModal" persistent maximized transition-show="fade" transition-hide="fade">
-        <div class="modal-backdrop" @click="closeModal">
+        <div class="modal-backdrop" @click="$router.back">
             <q-card class="mood-modal-card" @click.stop>
                 <!-- Header with decorative elements -->
                 <div class="modal-header">
-                    <div class="header-decoration"></div>
-                    <q-btn round flat icon="close" color="blue-grey-6" class="close-button" @click="closeModal" />
+                    <q-btn round flat icon="close" color="blue-grey-6" class="close-button" @click="$router.back" />
                 </div>
 
-                <q-card-section class="text-center q-pt-xl">
-                    <h3 class="text-h4 text-royal-blue q-mb-md">How are you feeling today?</h3>
-                    <p class="text-body1 text-blue-grey-8 q-mb-xl">
+                <q-card-section class="text-center q-pa-sm">
+                    <h3 class="text-h4 text-royal-blue q-mb-sm">How are you feeling today?</h3>
+                    <p class="text-body1 text-blue-grey-8 q-mb-xs">
                         Track your mood to improve your wellbeing and productivity insights.
                     </p>
                 </q-card-section>
 
                 <q-card-section class="q-px-lg">
-                    <div class="row q-col-gutter-lg">
-                        <div v-for="mood in moodOptions" :key="mood.value" class="col-6 col-sm-4 q-mb-md">
+                    <div class="row q-col-gutter-md">
+                        <div v-for="mood in moodOptions" :key="mood.value" class="col-6 col-sm-4 q-mb-sm">
                             <q-card clickable flat :class="{
                                 'mood-card': true,
                                 'mood-selected': selectedMood && selectedMood.value === mood.value
                             }" @click="handleMoodSelection(mood)" v-ripple>
-                                <q-card-section class="text-center q-py-lg">
+                                <q-card-section class="text-center q-pa-sm">
                                     <div class="mood-icon-wrapper" :class="`bg-${mood.color}-1`">
                                         <q-icon :name="mood.icon" :color="mood.color" size="34px" />
                                     </div>
-                                    <div class="text-h6 q-mt-md text-royal-blue">{{ mood.label }}</div>
+                                    <div class="text-h6 q-mt-sm text-royal-blue">{{ mood.label }}</div>
                                     <div class="text-caption q-mt-sm text-blue-grey-8">{{ mood.description }}</div>
                                 </q-card-section>
                             </q-card>
@@ -128,7 +115,7 @@ const closeModal = () => {
                         class="premium-input" />
                 </q-card-section>
 
-                <q-card-section class="text-center q-py-xl">
+                <q-card-section class="text-center q-py-sm">
                     <q-btn label="Confirm Selection" color="primary" class="premium-button" size="lg"
                         :disable="!selectedMood" @click="submitMood" />
                     <div class="text-caption q-mt-md text-blue-grey-7" v-if="!selectedMood">
@@ -136,8 +123,6 @@ const closeModal = () => {
                     </div>
                 </q-card-section>
 
-                <!-- Footer decoration -->
-                <div class="modal-footer"></div>
             </q-card>
         </div>
     </q-dialog>
@@ -165,19 +150,6 @@ const closeModal = () => {
     border: 1px solid rgba(255, 255, 255, 0.9);
 }
 
-.modal-header {
-    position: relative;
-    height: 8px;
-}
-
-.header-decoration {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 8px;
-    background: linear-gradient(90deg, #1E3A8A, #F59E0B);
-}
 
 .close-button {
     position: absolute;

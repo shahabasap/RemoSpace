@@ -73,7 +73,7 @@ onBeforeUnmount(() => {
                 <div class="text-h6">
                     Remo<span class="text-secondary">Space</span>
                 </div>
-                <q-btn icon="close" round dense v-close-popup class="absolute-right q-pa-md" />
+                <q-btn icon="close" @click="$router.back()" flat size="md" class="absolute-right" />
             </q-card-section>
 
             <q-card-section class="q-pt-lg">

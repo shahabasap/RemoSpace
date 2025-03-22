@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from 'src/stores/authStore.ts';
 
 
 const router = useRouter()
@@ -9,17 +10,21 @@ const password = ref('');
 const loginSuccess = ref(false);
 const rememberMe = ref(false);
 const loginError = ref(false);
+const authStore = useAuthStore();
 
 
 const onSubmit = async () => {
     if (email.value && password.value) {
-        loginSuccess.value = true;
-        loginError.value = false;
-
-        await router.push({ path: '/checkIn' });
+        try {
+           await authStore.login(email.value, password.value)
+            void router.push('/dashboard')
+        } catch (error) {
+            console.error('Invalid credentials. Please try again.', error);
+            throw error;
+        }
     } else {
-        loginSuccess.value = false;
-        loginError.value = true;
+        console.log("error");
+        loginError.value     = true;
     }
 }
 
