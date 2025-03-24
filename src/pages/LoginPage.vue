@@ -1,30 +1,41 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from 'src/stores/authStore.ts';
+import { useAuthStore } from 'src/stores/authStore';
+import { useQuasar } from 'quasar';
 
 
 const router = useRouter()
 const email = ref('');
 const password = ref('');
-const loginSuccess = ref(false);
 const rememberMe = ref(false);
-const loginError = ref(false);
+const loginError = ref('');
 const authStore = useAuthStore();
+const $q = useQuasar();
 
 
 const onSubmit = async () => {
-    if (email.value && password.value) {
-        try {
-           await authStore.login(email.value, password.value)
-            void router.push('/dashboard')
-        } catch (error) {
-            console.error('Invalid credentials. Please try again.', error);
-            throw error;
-        }
-    } else {
-        console.log("error");
-        loginError.value     = true;
+
+
+    try {
+        await authStore.login({
+            email: email.value,
+            password: password.value,
+        });
+
+        $q.notify({
+            type: 'positive',
+            message: 'Login successful!',
+            timeout: 1000,
+        });
+
+        void router.push('/dashboard');
+    } catch (error) {
+        console.error('Login error:', error);
+        $q.notify({
+            type: 'negative',
+            message: 'Login failed. Please try again.'
+        });
     }
 }
 
@@ -97,12 +108,6 @@ const onSubmit = async () => {
 
                             <q-btn unelevated color="primary" label="Sign in & Start My Day" type="submit"
                                 class="full-width q-py-sm" />
-
-                            <div v-if="loginSuccess" class="status-success">
-                                <q-banner class="bg-green-1 text-green">
-                                    Login successful! Preparing your workspace...
-                                </q-banner>
-                            </div>
 
                             <div v-if="loginError" class="status-error">
                                 <q-banner class="bg-red-1 text-red">

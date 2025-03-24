@@ -1,14 +1,17 @@
 <script setup lang="ts">
+import { useAuthStore } from 'src/stores/authStore';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const loadingData = ref(true);
 const currentDateTime = ref(new Date());
 const router = useRouter();
+const authStore = useAuthStore();
 
+console.log(authStore);
 
 const user = ref({
-    name: 'John Doe',
+    first_name: 'John Doe',
     position: 'UX Designer',
     avatar: 'https://cdn.quasar.dev/img/avatar.png',
     status: 'checked-in',
@@ -57,36 +60,6 @@ const activeTeams = ref([
         ongoingProjects: 3,
         completedProjects: 12
     },
-    {
-        id: 2,
-        name: 'UI/UX Design Team',
-        members: 5,
-        progress: 60,
-        leader: 'Emily Smith',
-        color: 'secondary',
-        ongoingProjects: 2,
-        completedProjects: 8
-    },
-    {
-        id: 3,
-        name: 'Backend Development Team',
-        members: 10,
-        progress: 85,
-        leader: 'Michael Brown',
-        color: 'purple',
-        ongoingProjects: 4,
-        completedProjects: 15
-    },
-    {
-        id: 4,
-        name: 'Marketing & Content Team',
-        members: 6,
-        progress: 50,
-        leader: 'Sophia Johnson',
-        color: 'green',
-        ongoingProjects: 2,
-        completedProjects: 6
-    }
 ]);
 
 
@@ -141,8 +114,28 @@ const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 };
 
+onMounted(() => {
+    const currentUser = authStore.user as {
+        id: string;
+        email: string;
+        first_name?: string;
+        last_name?: string;
+        avatar?: string;
+    } | null;
 
-
+    if (currentUser) {
+        user.value = {
+            first_name: currentUser.first_name || '',
+            position: 'UX Designer',
+            avatar: 'https://cdn.quasar.dev/img/avatar.png',
+            status: 'checked-in',
+            checkedInTime: '08:30 AM',
+            mood: 'happy'
+        };
+    } else {
+        console.error('User not found');
+    }
+});
 
 </script>
 
@@ -152,7 +145,7 @@ const formatDate = (date: Date) => {
         <!-- Welcome Header -->
         <div class="row items-center q-mb-md">
             <div class="col-12 col-md-6">
-                <h4 class="q-mt-none q-mb-xs">Welcome back, {{ user.name }}!</h4>
+                <h4 class="q-mt-none q-mb-xs">Welcome back, {{ user.first_name }}!</h4>
                 <p class="text-grey-7 q-mb-none">{{ formatDate(currentDateTime) }} · {{
                     formatTime(currentDateTime) }}
                 </p>
@@ -233,7 +226,7 @@ const formatDate = (date: Date) => {
                                 </q-avatar>
                             </div>
                             <div class="col q-ml-md">
-                                <div class="text-subtitle1">{{ user.name }}</div>
+                                <div class="text-subtitle1">{{ user.first_name }}</div>
                                 <div class="text-caption text-grey-7">{{ user.position }}
                                 </div>
                                 <div class="text-caption q-mt-xs">
@@ -270,7 +263,7 @@ const formatDate = (date: Date) => {
                                     <q-item-label>{{ member.name }}</q-item-label>
                                     <q-item-label caption>
                                         <span class="text-capitalize">{{ member.status.replace('-', ' ')
-                                        }}</span> · {{
+                                            }}</span> · {{
                                                 member.time }}
                                     </q-item-label>
                                 </q-item-section>

@@ -6,7 +6,7 @@ import {
   createWebHistory,
 } from 'vue-router';
 import routes from './routes';
-import { useAuthStore } from 'src/stores/authStore.ts';
+import { useAuthStore } from 'src/stores/authStore';
 
 /*
  * If not building with SSR mode, you can
@@ -35,7 +35,8 @@ export default defineRouter(function (/* { store, ssrContext } */) {
   // Protect Routes
   Router.beforeEach((to, from, next) => {
     const authStore = useAuthStore();
-    if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
       next('/login'); // Redirect to login if not authenticated
     } else {
       next();

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Mood } from 'src/boot/moodModel';
+import { type Mood } from 'src/services/moodModel';
 import { ref, watch } from 'vue';
 
 

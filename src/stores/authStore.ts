@@ -1,35 +1,23 @@
 import { defineStore } from 'pinia';
-import { directus } from '../services/directusServices';
-import { readMe } from '@directus/sdk';
+import { directus, readMe } from '../services/directus';
 
-export interface AuthState {
-  user: Record<string, QueryObject> | null;
-  isLoggedIn: boolean;
-}
-
-interface QueryObject {
-  fields: string[];
-}
-
-const query_object: QueryObject = {
-  fields: ['id', 'email', 'first_name', 'last_name', 'role']
-};
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: {},
-    isLoggedIn: false,
+    isAuthenticated: false,
   }),
 
   actions: {
+    
     // login
-    async login(email: string, password: string) {
+    async login(credentials: { email: string; password: string }) {
       try {
-        await directus.login(email, password);
-        const user = await directus.request(readMe(query_object));
+        await directus.login(credentials.email, credentials.password);
+        const user = await directus.request(readMe());
 
         this.user = user;
-        this.isLoggedIn = true;
+        this.isAuthenticated = true;
       } catch (error) {
         console.error('Login failed:', error);
         throw error;
@@ -40,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
     async logout() {
       await directus.logout();
       this.user = {};
-      this.isLoggedIn = false;
+      this.isAuthenticated = false;
     },
 
     // ✅ Load user state when app starts
@@ -48,11 +36,11 @@ export const useAuthStore = defineStore('auth', {
       try {
         const user = await directus.request(readMe());
         this.user = user;
-        this.isLoggedIn = true;
+        this.isAuthenticated = true;
       } catch (error) {
         console.log('No active session found.', error);
         this.user = {};
-        this.isLoggedIn = false;
+        this.isAuthenticated = false;
       }
     }
   },

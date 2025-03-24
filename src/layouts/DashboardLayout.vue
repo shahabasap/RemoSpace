@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { useAuthStore } from 'src/stores/authStore';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const currentDateTime = ref(new Date());
 const loadingData = ref(true);
+const authStore = useAuthStore();
 
 // User profile data
 const user = ref({
-    name: 'Alex Johnson',
+    first_name: 'Alex Johnson',
     position: 'UX Designer',
     avatar: 'https://cdn.quasar.dev/img/avatar.png',
     streak: 5,
@@ -45,6 +47,29 @@ const goToCheckIn = async () => {
     await router.push('/checkin');
 };
 
+onMounted(() => {
+    const currentUser = authStore.user as {
+        id: string;
+        email: string;
+        first_name?: string;
+        last_name?: string;
+        avatar?: string;
+    } | null;
+
+    if (currentUser) {
+        user.value = {
+            first_name: currentUser.first_name || '',
+            position: 'UX Designer',
+            avatar: 'https://cdn.quasar.dev/img/avatar.png',
+            streak: 5,
+            team: 'Design Squad',
+            status: 'checked-in',
+            checkedInTime: '08:30 AM'
+        };
+    } else {
+        console.log("user is not");
+    }
+});
 
 </script>
 
@@ -70,7 +95,7 @@ const goToCheckIn = async () => {
                                 <img :src="user.avatar">
                             </q-avatar>
                             <div class="q-ml-sm">
-                                {{ user.name }}
+                                {{ user.first_name }}
                             </div>
                         </div>
                     </template>
