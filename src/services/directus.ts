@@ -22,16 +22,18 @@ export interface User {
 
 export interface Item {
     id: string;
-    title: string;
+    title?: string;
     description?: string | undefined;
     // Add more fields as needed
 }
 
-const directus = createDirectus<{
-    directus_users: User[]; items: Item[];
-}>('https://directus.pizza')
+const directus = createDirectus('http://localhost:8055')
     .with(authentication())
     .with(rest());
+
+const allPosts = await directus.request(readItems('attendances'));
+console.log(allPosts);
+
 
 
 

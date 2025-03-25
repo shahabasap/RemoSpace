@@ -30,6 +30,7 @@ const onSubmit = async () => {
         });
 
         void router.push('/dashboard');
+        console.log("oksss");
     } catch (error) {
         console.error('Login error:', error);
         $q.notify({

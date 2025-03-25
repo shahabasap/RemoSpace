@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import { useAuthStore } from 'src/stores/authStore';
-import { onMounted, ref } from 'vue';
+// import { useCheckInStore } from 'src/stores/checkInStore';
+import { onMounted, ref, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 
 const loadingData = ref(true);
+const currentDate = ref('');
 const currentDateTime = ref(new Date());
 const router = useRouter();
 const authStore = useAuthStore();
+const showModal = ref(true);
+const locationVerified = ref(true);
 
-console.log(authStore);
+
+let timeInterval: number | null = null;
+
+const onSubmit = (): void => {
+
+    showModal.value = false;
+};
 
 const user = ref({
     first_name: 'John Doe',
@@ -20,18 +30,19 @@ const user = ref({
 });
 
 
+const updateCurrentTime = (): void => {
+    const now = new Date();
+    currentDate.value = now.toLocaleDateString([], {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+    });
+};
+
+
 // check-in modal
 const handleCheckIn = () => {
-    if (user.value.status == 'checked-in') {
-        // $q.notify({
-        //     message: 'You already checked-in',
-        //     color: 'secondary',
-        //     position: 'top'
-        // })
-        return;
-    } else {
-        void router.push('/checkIn');
-    }
+
 };
 
 
@@ -72,8 +83,15 @@ const activeMembers = ref([
 ]);
 
 
+const checkLocation = (): void => {
+    // Implement actual location checking logic here
+    locationVerified.value = true;
+};
+
+
 // Update date time periodically
 onMounted(() => {
+
     // Set initial time
     updateDateTime();
 
@@ -95,13 +113,20 @@ onMounted(() => {
     }, 1000);
 });
 
+onMounted(() => {
+    updateCurrentTime();
+    timeInterval = window.setInterval(updateCurrentTime, 60000);
+    checkLocation();
+});
+
+onBeforeUnmount(() => {
+    if (timeInterval !== null) {
+        clearInterval(timeInterval);
+    }
+});
+
 const updateDateTime = () => {
     currentDateTime.value = new Date();
-};
-
-const goToCheckIn = async () => {
-    // This would navigate to your separate check-in page
-    await router.push('/checkin');
 };
 
 // Format time as hh:mm AM/PM
@@ -151,7 +176,7 @@ onMounted(() => {
                 </p>
             </div>
             <div class="col-12 col-md-6 text-right">
-                <q-btn color="primary" label="Check In/Out" icon="login" @click="goToCheckIn" />
+                <q-btn color="primary" label="Check In/Out" icon="login" @click="showModal = true" />
             </div>
         </div>
 
@@ -263,7 +288,7 @@ onMounted(() => {
                                     <q-item-label>{{ member.name }}</q-item-label>
                                     <q-item-label caption>
                                         <span class="text-capitalize">{{ member.status.replace('-', ' ')
-                                            }}</span> · {{
+                                        }}</span> · {{
                                                 member.time }}
                                     </q-item-label>
                                 </q-item-section>
@@ -279,4 +304,90 @@ onMounted(() => {
             </div>
         </div>
     </q-page>
+
+
+
+    <!-- check-in/out  modal -->
+    <q-dialog v-model="showModal" persistent>
+        <q-card class="check-in-modal">
+            <q-card-section class="bg-primary text-white">
+                <div class="text-h6">
+                    Remo<span class="text-secondary">Space</span>
+                </div>
+                <q-btn icon="close" @click="showModal = false" flat size="md" class="absolute-right" />
+            </q-card-section>
+
+            <q-card-section class="q-pt-lg">
+                <div class="text-center q-mb-md">
+                    <h5 class="q-my-sm">{{ user.status ? 'Start Your Day' : 'End Your Day' }}</h5>
+                    <p class="text-grey-7 q-mb-lg">Track your attendance and work time</p>
+                </div>
+
+                <div class="time-display text-center q-mb-lg">
+                    <div class="text-h4 text-primary">{{ formatTime(currentDateTime) }}</div>
+                    <div class="text-caption text-grey">{{ currentDate }}</div>
+                </div>
+
+                <div class="q-mb-lg">
+                    <q-banner class="bg-blue-1 text-primary">
+                        <template v-slot:avatar>
+                            <q-icon name="person" color="primary" />
+                        </template>
+                        Welcome, {{ user.first_name }}
+                    </q-banner>
+                </div>
+
+            </q-card-section>
+
+            <q-separator />
+
+            <q-card-actions align="right">
+                <q-btn flat color="grey-7" label="Cancel" v-close-popup />
+                <q-btn unelevated color="primary" :label="user.status ? 'Check-In' : 'Check-Out'"
+                    :disable="!locationVerified" @click="onSubmit" />
+            </q-card-actions>
+        </q-card>
+    </q-dialog>
 </template>
+
+<style scoped>
+.check-in-modal {
+    width: 30vw;
+    max-width: 90vw;
+    border-radius: 12px;
+    background: white;
+}
+
+.time-display {
+    padding: 1rem;
+}
+
+h5 {
+    font-weight: 700;
+    margin: 0;
+}
+
+.text-secondary {
+    color: #F59E0B !important;
+}
+
+.bg-primary {
+    background-color: #1E3A8A !important;
+}
+
+.text-primary {
+    color: #1E3A8A !important;
+}
+
+.text-success,
+.bg-success {
+    color: #10B981 !important;
+    background-color: #10B981 !important;
+}
+
+.text-error,
+.bg-error {
+    color: #EF4444 !important;
+    background-color: #EF4444 !important;
+}
+</style>

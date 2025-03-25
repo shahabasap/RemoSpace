@@ -5,17 +5,22 @@ import { directus, readMe } from '../services/directus';
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: {},
+    token: null as string | null,
     isAuthenticated: false,
   }),
+
 
   actions: {
     
     // login
     async login(credentials: { email: string; password: string }) {
       try {
-        await directus.login(credentials.email, credentials.password);
+        const response = await directus.login(credentials.email, credentials.password);
         const user = await directus.request(readMe());
+        const token = response.access_token;
+        console.log(response);
 
+        this.token = token;
         this.user = user;
         this.isAuthenticated = true;
       } catch (error) {
