@@ -39,7 +39,7 @@ const updateDateTime = () => {
 };
 
 const handleLogout = async () => {
-    await router.push('/');
+    await authStore.logout();
 };
 
 const goToCheckIn = async () => {

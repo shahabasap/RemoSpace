@@ -6,7 +6,8 @@ import {
     deleteItem as deleteItemOperation,
     readItems,
     readMe,
-    updateItem as updateItemOperation
+    readCollections,
+    updateItem as updateItemOperation,
 } from '@directus/sdk';
 
 
@@ -27,17 +28,14 @@ export interface Item {
     // Add more fields as needed
 }
 
+
+
 const directus = createDirectus('http://localhost:8055')
     .with(authentication())
     .with(rest());
 
-const allPosts = await directus.request(readItems('attendances'));
-console.log(allPosts);
-
-
-
 
 export {
     createItemOperation as createItem, deleteItemOperation as deleteItem, directus,
-    readItems, readMe, updateItemOperation as updateItem
+    readItems, readMe, updateItemOperation as updateItem, readCollections
 };

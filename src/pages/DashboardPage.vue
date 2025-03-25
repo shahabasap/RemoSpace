@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from 'src/stores/authStore';
-// import { useCheckInStore } from 'src/stores/checkInStore';
+import { useCheckInStore } from 'src/stores/checkInStore';
 import { onMounted, ref, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -11,7 +11,9 @@ const router = useRouter();
 const authStore = useAuthStore();
 const showModal = ref(true);
 const locationVerified = ref(true);
+const checkInStore = useCheckInStore();
 
+console.log("asdf",checkInStore?.check)
 
 let timeInterval: number | null = null;
 
